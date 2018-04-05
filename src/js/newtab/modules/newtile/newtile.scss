@@ -1,0 +1,132 @@
+.newtile {
+  width: 100%; height: 100%;
+  position: relative;
+
+  .bgImg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    background-size: cover !important;
+    background-position: center center !important;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .ntContent {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    text-shadow: 0 0 2px #000;
+
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    &>* {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+
+  .closeLink {
+    z-index: 10;
+    display: block;
+    position: absolute;
+    width: 16px; height: 16px;
+    top: 10px; right: 10px;
+    filter: invert(100%);
+
+    svg {
+      width: 100%; height: 100%;
+    }
+
+    g {
+      fill: #000;
+    }
+  }
+
+  .search {
+    margin: 20px auto;
+    mix-blend-mode: exclusion;
+    width: 90%;
+    max-width: 500px;
+    padding: 0;
+    text-shadow: none;
+
+    input {
+      width: 100%;
+      background: none;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: 20px;
+      background: rgba(255,255,255,.2);
+      transition: background .3s, color .3s;
+
+      &:focus {
+        outline: none;
+        background: rgba(255,255,255,.9);
+        color: #333;
+      }
+    }
+
+    &.focused.withSuggestions {
+      input {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+  }
+}
+
+
+.clock {
+  font-family: "fredoka";
+  width: 280px;
+  line-height: 50px;
+  text-align: right;
+  margin: 0 auto;
+
+  .time {
+    width: 68%;
+    font-size: 60px;
+    display: inline-block;
+    padding-right: 20px;
+    border-right: 1px solid #fff;
+  }
+
+  .date {
+    width: 32%;
+    text-align: left;
+    display: inline-block;
+    padding-left: 20px;
+  }
+
+  .weekDay {
+    width: 50px;
+    text-align: center;
+    font-size: 24px;
+    line-height: 0;
+    display: block;
+  }
+
+  .monthDay {
+    width: 50px;
+    text-align: center;
+    font-size: 40px;
+    display: block;
+  }
+}
+
+.bgloaded .bgImg {
+  opacity: 1;
+}
+
+.tilefree .closeLink {
+  display: none;
+}

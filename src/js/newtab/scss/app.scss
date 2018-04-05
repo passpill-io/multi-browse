@@ -1,0 +1,25 @@
+@font-face {
+    font-family:'fredoka';
+    src: url("/fonts/FredokaOne-Regular.otf");
+}
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+a {
+  cursor: pointer;
+}
+
+a.navLink {
+  display: none;
+}
+
+.tile_NewTile {
+  .tilecontrols {
+    display: none;
+  }
+}

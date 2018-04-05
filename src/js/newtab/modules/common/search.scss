@@ -1,0 +1,71 @@
+.search {
+  position: relative;
+
+  &.focused .sSuggestions {
+    display: block;
+  }
+}
+
+.sSuggestions {
+  width: 100%;
+  position: absolute;
+  left: 0; top: 100%;
+  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+  background: #fff;
+  border-bottom: 1px solid #d9d9d9;
+  border: 1px solid #eee;
+  display: none;
+}
+
+
+a.sSuggestion {
+  text-align: left;
+  font-size: 15px;
+  font-family: system-ui, sans-serif;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 100%;
+
+  &.selected {
+    background: #EEEEEE;
+  }
+
+  &:hover {
+    background: #E8E8E8;
+  }
+
+  .sCointainer>* {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    
+    &>* {
+      flex-grow: 1;
+    }
+  }
+
+  svg {
+    width: 15px; height: 13px;
+    margin-right: 10px;
+  }
+}
+
+.sText{
+  max-width: 50%;
+  color: #333;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sTitle {
+  max-width: 40%;
+  color: #646464;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.s_page .sText {
+  color: #3367D6;
+}
