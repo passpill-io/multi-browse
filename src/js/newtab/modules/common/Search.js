@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import store from 'state/store';
 import Icon from 'modules/common/Icon';
+import SuggestionCache from 'utils/SuggestionCache';
 
 class Search extends Component {
   constructor( props ){
@@ -22,7 +23,7 @@ class Search extends Component {
     if( this.state.focused ){
       cn += ' focused';
     }
-    if( s.results && s.results.length ){
+    if( s && s.length ){
       cn += ' withSuggestions';
     }
 
@@ -41,9 +42,9 @@ class Search extends Component {
 
   renderSuggestions(){
     var s = this.state.suggestions;
-    if( !s || !s.results.length ) return;
+    if( !s || !s.length ) return;
 
-    var items = s.results.map( (r,i) => {
+    var items = s.map( (r,i) => {
       var cn = `sSuggestion s_${r.type}`;
       if( this.state.suggestionSelected === i ){
         cn += ' selected';
@@ -53,8 +54,8 @@ class Search extends Component {
         <a key={i} className={ cn } onClick={ () => this.go(r.value) } >
           <span className="sContainer">
             <Icon type={ r.type } />
-            <span className="sText">{ this.renderSuggestionText( s.q, r.text ) }</span>
-            <span className="sTitle"> - { r.type === 'page' ? this.renderSuggestionText(s.q, r.title) : 'Google Search' }</span>
+            <span className="sText">{ this.renderSuggestionText( this.state.q, r.text ) }</span>
+            <span className="sTitle"> - { r.type === 'page' ? this.renderSuggestionText(this.state.q, r.title) : 'Google Search' }</span>
           </span>
         </a>
       );
@@ -117,7 +118,7 @@ class Search extends Component {
       next
     ;
 
-    if( key === 38 && !current || key === 40 && current >= this.state.suggestions.results.length - 1 ){
+    if( key === 38 && !current || key === 40 && current >= this.state.suggestions.length - 1 ){
       return;
     }
 
@@ -126,25 +127,28 @@ class Search extends Component {
     next = key === 38 ? current - 1 : current + 1;
 
     this.setState({
-      value: this.state.suggestions.results[next].value,
+      value: this.state.suggestions[next].value,
       suggestedValue: false,
       suggestionSelected: next
     });
   }
 
-  go( url ){
-    var q = (url || this.state.suggestedValue || this.state.value).trim();
+  go( text ){
+    var q = (text || this.state.suggestedValue || this.state.value).trim();
 
     if(!q) return;
 
+    var url;
     if( q.startsWith("http") ){
-      return this.props.onUrl(q);
+      url = q;
+    } else if( q.match(/[^\s]+\.[^\s]+/) ){
+      url = `http://${q}`;
     }
-    if( q.match(/.+\..+/) ){
-      return this.props.onUrl(`http://${q}`);
+    else {
+      url = `https://www.google.es/search?q=${encodeURIComponent(q)}`;
     }
 
-    this.props.onUrl(`https://www.google.es/search?q=${encodeURIComponent(q)}`) ;
+    store.emit('browser:navigate', this.props.browserId, url );
   }
 
   componentWillReceiveProps(nextProps){
@@ -153,97 +157,90 @@ class Search extends Component {
         value: nextProps.url,
         propUrl: nextProps.url,
         suggestedValue: false,
-        suggestions: false
+        suggestions: false,
+        q: false
       });
     }
   }
 
   updateWithSuggestions( text ){
     if( text === this.state.value ){
-      return this.setState({suggestedValue: false});
+      return this.setState({
+        suggestedValue: false,
+        q: text,
+        suggestionSelected: 0,
+        suggestions: SuggestionCache.get( text, true ).suggestions
+      });
     };
 
-    this.setState({
-      value: text,
-      suggestedValue: false
-    });
+    var isBack = this.state.value.indexOf( text ) === 0,
+      cache = SuggestionCache.get( text, isBack ),
+      update = {
+        value: text,
+        suggestedValue: false,
+        q: text
+      }
+    ;
 
-    store.emit('search:getSuggestions', text )
-      .then( suggestions => {
-        console.log( this );
-        if( suggestions.q !== this.state.value ) return;
+    if( cache ){
+      update.suggestions = cache.suggestions;
+      update.suggestionSelected = 0;
+      if( !isBack && cache.suggestions.length && cache.suggestions[0].type === 'page' ){
+        update.selection = [text.length, cache.suggestions[0].value.length];
+      }
+      else {
+        update.selection = false;
+      }
+    }
 
-        var parsed = this.parseSuggestions(suggestions),
-          update = {
-            suggestions: parsed,
-            suggestionSelected: 0
-          }
+    this.setState(update);
+
+    if( isBack || cache && cache.complete ){
+      return;
+    }
+
+    store.emit('search:getSuggestions', this.props.browserId, text )
+      .then( data => {
+        SuggestionCache.add( data );
+        if( data.q !== this.state.value ) return;
+
+        var cache = SuggestionCache.get( this.state.value ),
+          suggestedValue = cache && cache.suggestions.length && cache.suggestions[0].value,
+          selection = suggestedValue && cache.suggestions[0].type === 'page' && [data.q.length, suggestedValue.length]
         ;
 
-        if( parsed.selection ){
-          update.suggestedValue = parsed.results[0].value;
-        }
-        else {
-          update.suggestedValue = false;
-        }
-
-        this.setState( update );
+        this.setState({
+          suggestions: cache.suggestions || [],
+          suggestionSelected: 0,
+          suggestedValue, selection
+        });
       })
     ;
   }
 
-  parseSuggestions( res ){
-    var firstUrl = this.cleanUrlTitle( res.suggestions[0].url );
-    var selection = false;
-    var results = [];
-    if( firstUrl && firstUrl.indexOf(res.q) === 0 ){
-      selection = [ res.q.length, firstUrl.length];
-    }
-    else {
-      results.unshift({
-        type: 'search',
-        text: []
-      });
-      if( res.suggestions.length === 6 ){
-        res.suggestions.pop();
-      }
-    }
-
-    res.suggestions.forEach( s => {
-      if( s.url ){
-        results.push({
-          type: 'page',
-          text: this.cleanUrlTitle( s.url ).split(res.q),
-          title: s.title.split( res.q ),
-          value: this.cleanUrlTitle( s.url )
+  componentDidMount(){
+    this.onMessage = msg => {
+      if( !msg || msg.browserId !== this.props.browserId ) return;
+      if( msg.type !== 'webSuggestions' && msg.type !== 'historySuggestions' ) return;
+      SuggestionCache.add( msg );
+      if( msg.q === this.state.value ){
+        this.setState({
+          suggestions: SuggestionCache.get(msg.q).suggestions
         });
       }
-      else {
-        results.push({
-          type: 'search',
-          text: s.text.split( res.q ),
-          value: s.text
-        });
-      }
-    });
-
-    return {
-      q: res.q,
-      selection: selection,
-      results: results
     };
+    chrome.runtime.onMessage.addListener( this.onMessage );
   }
 
-  cleanUrlTitle( url ){
-    if(!url) return '';
-    return url.replace(/^https?:\/\/(www\.)?/i, '');
+  componentWillUnmount(){
+    chrome.runtime.onMessage.removeListener( this.onMesage );
   }
 
   componentDidUpdate( prevProps, prevState ){
     var s = this.state.suggestions;
-    if( s && s.selection && s !== prevState.suggestions ){
+    if( this.state.selection && this.state.selection !== prevState.selection ){
       this.input.focus();
-      this.input.setSelectionRange( s.selection[0], s.selection[1], "backward" );
+      this.input.setSelectionRange( this.state.selection[0], this.state.selection[1], "backward" );
     }
   }
 }

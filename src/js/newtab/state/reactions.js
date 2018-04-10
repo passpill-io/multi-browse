@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener( (msg,sender) => {
     store.emit('browser:push', browserId, msg.details.url);
     store.emit('browser:navigate', browserId, msg.details.url);
   }
-  else if( sender.tab.id === currentTab && !opening  ){
+  else if( sender.tab && sender.tab.id === currentTab && !opening  ){
     opening = true;
     setTimeout( () => opening = false, 100 );
 
@@ -92,9 +92,14 @@ store.on('browser:push', (browserId, url) => {
   browser.history = h;
 });
 
-store.on('search:getSuggestions', text => {
+store.on('search:getSuggestions', (browserId, text) => {
+  var payload = {
+    type: 'searchSuggestion',
+    text: text,
+    browserId: browserId
+  };
   return new Promise( resolve => {
-    chrome.runtime.sendMessage({type: 'searchSuggestion', text: text}, suggestions => {
+    chrome.runtime.sendMessage( payload, suggestions => {
       resolve( suggestions );
     })
   })

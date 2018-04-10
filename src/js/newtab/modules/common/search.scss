@@ -17,14 +17,14 @@
   display: none;
 }
 
-
 a.sSuggestion {
   text-align: left;
-  font-size: 15px;
+  font-size: 14px;
   font-family: system-ui, sans-serif;
-  padding: 5px 10px;
+  padding: 4px 10px 7px;
   cursor: pointer;
   width: 100%;
+  display: block;
 
   &.selected {
     background: #EEEEEE;
@@ -34,32 +34,39 @@ a.sSuggestion {
     background: #E8E8E8;
   }
 
-  .sCointainer>* {
-    display: flex;
-    flex-wrap: nowrap;
+  .sContainer {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
-    
-    &>* {
-      flex-grow: 1;
+    color: #646464;
+    & > * {
+      vertical-align: bottom;
     }
   }
 
   svg {
-    width: 15px; height: 13px;
-    margin-right: 10px;
+    width: 13px;
+    height: 12px;
+    margin: 0 8px 0 0;
+    display: inline-block;
+    vertical-align: baseline !important;
   }
 }
 
-.sText{
+
+.sText {
   max-width: 50%;
+  display: inline-block;
   color: #333;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  margin-top: 3px;
 }
 
 .sTitle {
-  max-width: 40%;
   color: #646464;
   text-overflow: ellipsis;
   overflow: hidden;

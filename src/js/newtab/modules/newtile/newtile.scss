@@ -52,14 +52,13 @@
 
   .search {
     margin: 20px auto;
-    mix-blend-mode: exclusion;
-    width: 90%;
-    max-width: 500px;
+    width: 100%;
     padding: 0;
     text-shadow: none;
 
     input {
       width: 100%;
+      max-width: 500px;
       background: none;
       border: 1px solid rgba(255,255,255,.8);
       border-radius: 5px;

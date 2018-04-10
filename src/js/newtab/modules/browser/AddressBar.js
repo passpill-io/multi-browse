@@ -40,25 +40,11 @@ class AddressBar extends Component {
         <div className="abBack abBtn"><a onClick={ () => this.goBack() }><Icon type="arrow" /></a></div>
         <div className="abForward abBtn"><a onClick={ () => this.goForward() }><Icon type="arrow" /></a></div>
         <div className="abReload abBtn"><a onClick={ () => this.refresh() }>{ reload }</a></div>
-        <Search onUrl={ url => this.navigate(url) } url={ this.props.url }/>
+        <Search browserId={ this.props.browserId } url={ this.props.url }/>
         <div className="abClose abBtn" onClick={ () => this.props.closeTile() }><a><Icon type="close" /></a></div>
         <Tiles.Link className="navLink" ref={ l => this.link = l } to={ browser && browser.history[browser.historyIndex]}></Tiles.Link>
       </div>
     );
-  }
-
-  push( url ){
-    return this.navigate(url);
-
-    var b = this.props.browser;
-    b.historyIndex++;
-    b.history.push(url);
-
-    this.navigate(url);
-  }
-
-  navigate( url ){
-    store.emit('browser:navigate', this.props.browserId, url );
   }
 
   goBack(){
@@ -66,7 +52,7 @@ class AddressBar extends Component {
     if( b.historyIndex < 1 ) return;
 
     b.historyIndex--;
-    this.navigate( b.history[b.historyIndex] );
+    b.emit('browser:navigate', this.props.browserId, b.history[b.historyIndex]);
   }
 
   goForward(){
@@ -74,7 +60,7 @@ class AddressBar extends Component {
     if( b.historyIndex === b.history.length - 1 ) return;
 
     b.historyIndex++;
-    this.navigate( b.history[b.historyIndex] );
+    b.emit('browser:navigate', this.props.browserId, b.history[b.historyIndex]);
   }
   refresh(){
     if( this.props.browser.status === 'LOADING' ){
@@ -82,24 +68,6 @@ class AddressBar extends Component {
     }
     else {
       this.props.browser.emit('browser:reload', this.props.browserId);
-    }
-  }
-  componentNoWillReceiveProps( nextProps ){
-    var browser = nextProps.browser;
-    if( this.props.browser !== browser ){
-      console.log('Browser update');
-      var url = browser.history[ browser.historyIndex ];
-      url && this.navigate(url);
-      this.setState({
-        url: url,
-        propsUrl: nextProps.url
-      });
-    }
-    else if( nextProps.url !== this.state.propsUrl ){
-      this.setState({
-        url: nextProps.url,
-        propsUrl: nextProps.url
-      });
     }
   }
 }

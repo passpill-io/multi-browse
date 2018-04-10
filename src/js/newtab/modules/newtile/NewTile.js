@@ -57,16 +57,12 @@ class NewTile extends Component {
         <div className="ntContent">
           <div className="ntUpper">
             <Clock />
-            <Search onUrl={ url => this.search(url) } ref={ s => this.s = s } />
+            <Search browserId={ this.props.layout.id } ref={ s => this.s = s } />
           </div>
           <div className="ntLower"></div>
         </div>
       </div>
     );
-  }
-
-  search(url){
-    store.emit('browser:navigate', this.props.layout.id, url );
   }
 
   loadBG(){

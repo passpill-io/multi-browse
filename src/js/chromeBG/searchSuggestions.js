@@ -4,21 +4,31 @@ chrome.runtime.onMessage.addListener( (req, sender, sendResponse ) => {
   if( !req || req.type !== 'searchSuggestion' ) return;
 
   sendResponse({
+    type: 'typedSuggestions',
     q: req.text,
+    browserId: req.browserId,
     suggestions: memorizer.getSuggestions(req.text).map( r => {
-      r.points = 1000;
-      r.type = 'history';
-      return r;
+      var textParts = r.url.split(req.text);
+      textParts[0] = '';
+      return {
+        type: 'page',
+        points: 2000,
+        value: textParts.join(req.text),
+        text: textParts,
+        title: r.title.split(req.text)
+      };
     })
   });
 
   if( req.text.length > 2 ){
-    getSearchSuggestions();
+    getHistorySuggestions( req.text, req.browserId, sender.tab.id );
+    getWebSuggestions( req.text, req.browserId, sender.tab.id );
   }
 });
 
 var googleDomain, searchURL;
 
+// Get google localized url
 fetch('https:/google.com')
   .then( res => {
     var parser = document.createElement('a');
@@ -27,52 +37,7 @@ fetch('https:/google.com')
   })
 ;
 
-function joinSuggestions( history, web ){
-  if( !web ) {
-    return history || [];
-  }
-  else if( !history ){
-    return web || [];
-  }
-
-  var suggestions = [];
-
-  for( let i=0; i<6; i++ ){
-    if( !history.length || history[0].points < web[0].points ){
-      suggestions.push( web.shift() );
-    }
-    else {
-      suggestions.push( history.shift() );
-    }
-  }
-
-  return suggestions;
-}
-
-function getSearchSuggestions( text ){
-  var suggestions = [],
-    history, web, sent
-  ;
-
-  return new Promise( resolve => {
-    var timer = setTimeout( () => {
-      !sent && resolve( {q: text, suggestions: joinSuggestions(history, web)} );
-    }, 1000);
-
-    var checkFinished = function(){
-      if( history && web ){
-        clearTimeout( timer );
-        sent === true;
-        resolve( {q: text, suggestions: joinSuggestions(history, web)} );
-      }
-    }
-
-    getHistorySuggestions( text ).then( s => (history = s) && checkFinished() );
-    getWebSuggestions( text ).then( s => (web = s) && checkFinished() );
-  });
-}
-
-function getWebSuggestions( text ){
+function getWebSuggestions( text, browserId, tabId ){
   return fetch( searchURL + encodeURIComponent(text) )
     .then( res => res.text() )
     .then( body => {
@@ -80,23 +45,28 @@ function getWebSuggestions( text ){
         body = body.slice(4);
       }
 
-      var data = parseGoogleSuggestions( JSON.parse(body) );
+      var data = parseGoogleSuggestions( text, JSON.parse(body) );
       console.log( data );
-      return data;
+      chrome.tabs.sendMessage( tabId, {
+        type: 'webSuggestions',
+        browserId: browserId,
+        suggestions: data,
+        q: text
+      });
     })
   ;
 }
 
-function parseGoogleSuggestions( data ){
+function parseGoogleSuggestions( text, data ){
   var suggestions = [];
 
   for( let i = 0; i < 6; i++ ){
     suggestions.push({
-      type: 'search',
-      text: data[1][i],
-      title: data[2][i],
+      type: data[4]['google:suggesttype'][i] === 'NAVIGATION' ? 'page' : 'search',
+      text: data[1][i].split(text),
+      title: data[2][i].split(text),
       points: data[4]['google:suggestrelevance'][i],
-      url: data[4]['google:suggesttype'][i] === 'NAVIGATION' && data[2][i]
+      value: data[2][i] || data[1][i]
     });
   }
 
@@ -115,7 +85,7 @@ function getTimePoints( time ){
 function sortSuggestions( a, b ){
   return a.points < b.points ? 1 : - 1;
 }
-function getHistorySuggestions( text ){
+function getHistorySuggestions( text, browserId, tabId ){
   return new Promise( resolve => {
     chrome.history.search({text}, results => {
       var suggestions = [];
@@ -125,16 +95,28 @@ function getHistorySuggestions( text ){
 
         if( !timePoints && !r.typedCount ) return;
 
+        var value = r.url.split('://')[1];
+        if( value.indexOf(text) !== 0 ){
+          value = value.replace(/^www\./i, '');
+        }
+
         suggestions.push({
-          type: 'history',
-          points: 600 + timePoints + (r.typedCount*10) + (r.visitCount / 2),
-          title: r.title,
-          url: r.url
+          type: 'page',
+          points: (600 + timePoints + (r.typedCount*10) + (r.visitCount / 2)) * 2,
+          title: r.title.split(text),
+          text: value.split(text),
+          value: value
         });
       });
       // return resolve( results );
       suggestions.sort( sortSuggestions );
-      resolve(suggestions.slice(0,6));
+
+      chrome.tabs.sendMessage( tabId, {
+        type: 'historySuggestions',
+        browserId: browserId,
+        suggestions: suggestions.slice(0,6),
+        q: text
+      });
     })
   })
 }

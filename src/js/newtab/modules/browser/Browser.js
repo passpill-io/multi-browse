@@ -40,6 +40,12 @@ class Browser extends Component {
       var b = store.browsers[ this.props.layout.id ];
       b.status = 'OK';
     };
+    this.iframe.focus();
+  }
+  componentDidUpdate( prevProps ){
+    if( prevProps.layout.query.url !== this.props.layout.query.url ){
+      this.iframe.focus();
+    }
   }
 }
 
