@@ -1,8 +1,24 @@
 $bar-height: 35px;
 
 .tile_Browser {
+  display: flex;
+  flex-direction: column;
+
   .tilecontrols {
     display: block;
+    height: 35px;
+    flex-grow: 0;
+  }
+  .tilecontent {
+    flex-grow: 1;
+    height: auto;
+    position: static;
+    display: flex;
+    align-items: stretch;
+
+    iframe {
+      height: auto;
+    }
   }
 }
 

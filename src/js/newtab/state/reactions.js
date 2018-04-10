@@ -92,6 +92,12 @@ store.on('browser:push', (browserId, url) => {
   browser.history = h;
 });
 
+store.on('browser:close', browserId => {
+  var builder = getBuilder();
+  var url = builder.remove( browserId );
+  resolver.navigate( url );
+});
+
 store.on('search:getSuggestions', (browserId, text) => {
   var payload = {
     type: 'searchSuggestion',

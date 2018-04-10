@@ -53,7 +53,9 @@ class NewTile extends Component {
           .newtile .search input {`{border-color: rgba(${this.bg.color[0]}, ${this.bg.color[1]}, ${this.bg.color[2]}, .8)}`}
         </style>
         <div className="bgImg" style={{background: `url(${this.bg.url})`}}></div>
-        <a className="closeLink"><Icon type="close" /></a>
+        <a className="closeLink" onClick={ () => store.emit('browser:close', this.props.layout.id) }>
+          <Icon type="close" />
+        </a>
         <div className="ntContent">
           <div className="ntUpper">
             <Clock />
