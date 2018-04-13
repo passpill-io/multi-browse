@@ -168,6 +168,8 @@ $elementsWidth: 120px;
   text-shadow: 0 0 5px rgba(0,0,0,.2);
   color: #fff;
   text-align: right;
+  opacity: 0;
+  transition: opacity .3s;
 
   a {
     color: #fff;
@@ -176,6 +178,10 @@ $elementsWidth: 120px;
   p {
     margin: 5px 0;
   }
+}
+
+.bgloaded .imageDescription{
+  opacity: .1;
 }
 
 
