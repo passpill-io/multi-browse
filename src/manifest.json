@@ -21,7 +21,13 @@
     "js": ["contentScript.bundle.js"]
   }],
   "permissions": [
-    "<all_urls>","webRequest","webRequestBlocking","commands","tabs","webNavigation", "history"
+    "<all_urls>",
+    "webRequest",
+    "webRequestBlocking",
+    "tabs",
+    "webNavigation",
+    "history",
+    "topSites"
   ],
   "commands": {
     "split-window": {

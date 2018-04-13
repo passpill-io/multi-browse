@@ -1,6 +1,7 @@
 import memorizer from './memorizer';
-memorizer.init();
+import hub from './hub';
 
+memorizer.init();
 
 var navQueue = {};
 var historyQueue = {};
@@ -15,10 +16,12 @@ chrome.webNavigation.onCommitted.addListener( details => {
   var initialURL = navQueue[details.tabId];
   delete navQueue[details.tabId];
 
+  hub.emit('url:visited', details.tabId, initialURL );
+
   if( details.transitionType !== 'typed' ) return;
 
-  // memorizer.addHit( initialURL );
   console.log('HIT', initialURL);
+
   historyQueue[ details.url ] = initialURL;
 });
 

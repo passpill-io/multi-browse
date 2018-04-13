@@ -3,6 +3,7 @@ import '../img/icon-34.png'
 
 import './chromeBG/searchSuggestions';
 import './chromeBG/typedHistory';
+import './chromeBG/topSites';
 
 chrome.runtime.onMessage.addListener( (req, sender, sendResponse ) => {
   if( !req || !req.type ) return;
