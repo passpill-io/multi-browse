@@ -10,16 +10,7 @@ var webpack = require("webpack"),
 
 const jsPath = path.join(__dirname, 'src/js');
 
-// load the secrets
-var alias = {};
-
-var secretsPath = path.join(__dirname, ("secrets." + env.NODE_ENV + ".js"));
-
 var fileExtensions = ["jpg", "jpeg", "png", "gif", "eot", "otf", "svg", "ttf", "woff", "woff2"];
-
-if (fileSystem.existsSync(secretsPath)) {
-  alias["secrets"] = secretsPath;
-}
 
 var options = {
   entry: {
@@ -82,7 +73,7 @@ var options = {
     new CleanWebpackPlugin(["build"]),
     // expose and write the allowed env vars on the compiled bundle
     new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV)
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV)
     }),
     new CopyWebpackPlugin([{
       from: "src/manifest.json",
@@ -99,6 +90,12 @@ var options = {
       from: "src/fonts",
       to: "fonts",
       toType: "dir"
+    }]),
+    new CopyWebpackPlugin([{
+      from: "images",
+      to: "images",
+      toType: "dir",
+      ignore: ["s3.json"]
     }]),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src", "popup.html"),

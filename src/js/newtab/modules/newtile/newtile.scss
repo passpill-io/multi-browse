@@ -1,6 +1,7 @@
 .newtile {
   width: 100%; height: 100%;
   position: relative;
+  background: #567890;
 
   .bgImg {
     position: absolute;
@@ -181,7 +182,7 @@ $elementsWidth: 120px;
 }
 
 .bgloaded .imageDescription{
-  opacity: .1;
+  opacity: 1;
 }
 
 

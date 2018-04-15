@@ -1,6 +1,11 @@
+var rimraf = require('rimraf');
+var fs = require('fs-extra');
+var s3 = require('s3');
+var aws = require('aws-sdk');
+
 const IMAGE_PATH = __dirname + '/images';
 const UPLOAD_PATH = IMAGE_PATH + '/upload';
-const PUBLIC_URL = 'https://dont.know/dir/';
+const PUBLIC_URL = 'http://multi-browse.s3-website.us-east-2.amazonaws.com/';
 
 const IMAGE_COUNT = 4;
 
@@ -9,19 +14,24 @@ if( !checkImages(imagesDir) ){
   exit(`Needs to be ${IMAGE_COUNT} images`);
 }
 
-var imageData = require( UPLOAD_PATH + '/imageData.json' );
+var imageData = require( IMAGE_PATH + '/images.json' );
 if( !checkImageData(imagesDir, imageData) ){
   exit("Image data doesn't match images in the folder");
 }
 
 var folderName = createFolderName();
 delIfExists(folderName);
-generateImagesFolder( IMAGE_PATH, folderName, UPLOAD_PATH, imageData );
-generateImagesJSON(folderName);
+generateImagesFolder(folderName, imageData );
+generateImagesJSON(imageData);
 
-uploadDir(folderName);
-uploadFile(`${IMAGE_PATH}/images.json`);
-console.log('Images uploaded ok');
+uploadDir(folderName, () => {
+  uploadFile(`${IMAGE_PATH}/upload.json`, () => {
+    console.log('Images uploaded ok');
+  });
+});
+
+
+
 
 /* HELPER FUNCTIONS */
 
@@ -32,11 +42,16 @@ function exit( msg ){
   process.exit();
 }
 function readDir( path ){
-  return fs.readDirSync( path );
+  return fs.readdirSync( path );
 }
 
-function isImage( file ){
+function isImage( f ){
   return f.endsWith('.jpg') || f.endsWith('.jpeg');
+}
+
+function createFolderName(){
+  var d = new Date();
+  return `${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}_${d.getHours()}_${d.getMinutes()}`;
 }
 
 function checkImages( files ){
@@ -53,9 +68,9 @@ function checkImageData( files, data ){
   if( !data.splice ) return console.log('Image data is not an array');
   if( data.length !== IMAGE_COUNT ) return console.log(`Image data contains ${data.length} elements`);
 
-  var fileNames = {}
+  var fileNames = {};
   files.forEach( f => {
-    if( isImage[f] )
+    if( isImage(f) )
       fileNames[f] = 1;
   });
 
@@ -69,16 +84,93 @@ function checkImageData( files, data ){
   return true;
 }
 
+function delIfExists( folder ){
+  console.log('Cleaning dir' + folder );
+  try {
+    rimraf.sync( IMAGE_PATH + '/' + folder );
+    console.log(`Dir ${folder} deleted`);
+  }
+  catch( err ){
+    console.log('No dir to delete');
+  }
+}
 
-var s3 = require('s3');
+function generateImagesFolder( folderName, imageData ){
+  var imgPath = `${IMAGE_PATH}/${folderName}`,
+    remoteFolder = `${PUBLIC_URL}${folderName}/`
+  ;
 
+  // create folder
+  fs.mkdirSync( imgPath );
 
+  // copy files
+  imageData.forEach( d => {
+    fs.copySync( `${UPLOAD_PATH}/${d.url}`, `${imgPath}/${d.url}` );
+    d.url = remoteFolder + d.url;
+  });
+}
 
-var client = s3.createClient({
-  s3Options: require('./images/s3.json')
-});
+function generateImagesJSON( imageData ){
+  // The data has been already adapted by generateImagesFolder
+  fs.writeFileSync(`${IMAGE_PATH}/upload.json`, JSON.stringify(imageData) );
+}
 
-var uploader = client.uploadDir({
-  localDir: 'images/upload',
+function createS3Client(){
+  var s3Client = new aws.S3(
+    require('./images/s3.json').s3Options
+  );
+  return s3.createClient({s3Client});
+}
 
-})
+function uploadDir( folderName, clbk ){
+  var options = require('./images/s3.json'),
+    uploader = createS3Client().uploadDir({
+      localDir: `${IMAGE_PATH}/${folderName}`,
+      s3Params: {
+        Bucket: options.bucket,
+        Prefix: folderName,
+        CacheControl: 'max-age:31536000' // 1 year
+      }
+    })
+  ;
+
+  console.log('Start uploading images dir');
+  handleS3Progress( uploader, err => {
+    if( err ){
+      console.log(err);
+      exit('Error uploading images dir');
+    }
+    clbk();
+  });
+}
+
+function uploadFile( path, clbk ){
+  var options = require('./images/s3.json'),
+    pathParts = path.split('/'),
+    uploader = createS3Client().uploadFile({
+      localFile: path,
+      s3Params: {
+        Bucket: options.bucket,
+        Key: "images.json",
+        CacheControl: 'max-age:' + (24 * 60 * 60) // 1 day
+      }
+    })
+  ;
+
+  console.log('Start uploading images.json');
+  handleS3Progress( uploader, err => {
+    if( err && !err.ETag ){
+      console.log(err);
+      exit('Error uploading images.json');
+    }
+    clbk();
+  });
+}
+
+function handleS3Progress( uploader, clbk ){
+  uploader.on('error', clbk);
+  uploader.on('progress', function() {
+    console.log("progress", uploader.progressAmount, uploader.progressTotal);
+  });
+  uploader.on('end', clbk);
+}
