@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener( (req, sender, sendResponse) => {
   sendResponse(topSites);
 });
 
-const twoDays = 10; // 2 * 24 * 60 * 60 * 1000;
+const twoDays = 2 * 24 * 60 * 60 * 1000;
 hub.on('url:visited', (tabId, url) => {
   if( !lastUpdated[url] || Date.now() - lastUpdated[url] < twoDays ) return;
 
@@ -95,7 +95,8 @@ function init( sites ){
 }
 
 function getImages(){
-  return localStorage.getItem(LS_KEY) || {};
+  var images = localStorage.getItem(LS_KEY) ;
+  return images ? JSON.parse(images) : {};
 }
 
 function saveImages(){
@@ -107,7 +108,7 @@ function saveImages(){
       lastUpdated: lastUpdated[site.url]
     };
   });
-  localStorage.setItem(LS_KEY, images);
+  localStorage.setItem(LS_KEY, JSON.stringify(images));
 }
 
 chrome.topSites.get( init );
