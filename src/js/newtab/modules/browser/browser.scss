@@ -59,7 +59,26 @@ div.tilecontent {
   svg {
     max-width: 14px;
     max-height: 14px;
-    margin-top: 4px;
+    margin-top: 5px;
+  }
+
+  .refreshIcons {
+    position: relative;
+
+    &>svg {
+      position: absolute;
+      top: 0;
+      left: 5px;
+
+      &:first-child {
+        animation: spin 1200ms linear infinite;
+      }
+
+      &:last-child {
+        display: none;
+        width: 13.5px;
+      }
+    }
   }
 
   .search {
@@ -85,9 +104,20 @@ div.tilecontent {
   }
 }
 
+.abReload {
+  a:hover svg {
+    &:first-child {
+      display: none;
+    }
+    &:last-child {
+      display: inline;
+    }
+  }
+}
+
 .abBtn {
   width: 24px; height: 24px;
-  margin: 7px 0 3px 5px;
+  margin: 6px 0 3px 5px;
 
   a {
     display: block;
@@ -128,6 +158,9 @@ div.tilecontent {
     transform: rotate(180deg);
     margin-top: -2px;
   }
+  svg {
+    margin-top: 3px;
+  }
 }
 
 .abClose {
@@ -156,4 +189,9 @@ div.tilecontent {
     cursor: default;
     background: transparent;
   }
+}
+
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
 }

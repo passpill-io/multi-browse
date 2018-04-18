@@ -40,6 +40,10 @@ class Browser extends Component {
       var b = store.browsers[ this.props.layout.id ];
       b.status = 'OK';
     };
+
+    store.on('browser:reload', browserId => {
+      console.log('RELOAD');
+    });
   }
   componentDidUpdate( prevProps ){
     if( prevProps.layout.query.url !== this.props.layout.query.url ){

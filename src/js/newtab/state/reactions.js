@@ -92,6 +92,13 @@ store.on('browser:push', (browserId, url) => {
   browser.history = h;
 });
 
+store.on('browser:reload', browserId => {
+  chrome.runtime.sendMessage({
+    type: 'browserReloadRequest',
+    browserId: browserId
+  });
+});
+
 store.on('browser:close', browserId => {
   var builder = getBuilder();
   var url = builder.remove( browserId );

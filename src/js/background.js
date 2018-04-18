@@ -17,6 +17,12 @@ chrome.runtime.onMessage.addListener( (req, sender, sendResponse ) => {
   else if( req.type === 'tileOpen' ){
     onTileOpen( sender.tab.id, req.hostUrl );
   }
+  else if( req.type === 'browserReloadRequest' ){
+    onBrowserReloadRequest( sender.tab.id, req.browserId );
+  }
+  else if( req.type === 'registerScript' ){
+    onRegisterScript( sender, sendResponse );
+  }
 
   return true;
 });
@@ -189,4 +195,17 @@ function onTileOpen( tabId, hostUrl ){
       splitTabs.add(tab.id);
     });
   }
+}
+
+function onBrowserReloadRequest( tabId, browserId ){
+  console.log('BROWSER RELOAD REQUEST', browserId);
+
+  chrome.tabs.sendMessage({
+    type: 'browserReload',
+    browserId: browserId
+  });
+}
+
+function onRegisterScript( sender, sendResponse ){
+  console.log('REGISTER SCRIPT', sender);
 }

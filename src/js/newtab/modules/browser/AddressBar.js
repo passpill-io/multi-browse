@@ -30,7 +30,12 @@ class AddressBar extends Component {
       }
 
       if( browser.status === 'LOADING' ){
-        reload = <Icon type="stop" />
+        reload = (
+          <div className="refreshIcons">
+            <Icon type="loading" />
+            <Icon type="stop" />
+          </div>
+        );
       }
     }
 

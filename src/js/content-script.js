@@ -1,4 +1,9 @@
 (function(){
+  var browserId;
+  chrome.runtime.sendMessage({type: 'registerScript'}, res => {
+    browserId = res.browserId;
+  });
+
   document.addEventListener('click', e => {
     var a = e.target;
     if( !e.altKey || a.tagName.toLowerCase() !== 'a' || !a.href || a.href === '#' ) return;
@@ -18,5 +23,10 @@
         hostUrl: location.href
       });
     }
+  });
+
+  chrome.runtime.onMessage.addListener( e => {
+    if( e.type !== 'browserReload' || e.browserId !== browserId ) return;
+    location.reload();
   });
 })();

@@ -91,13 +91,25 @@ class Icon extends Component {
       width: 158,
       height: 239,
       component: (
-        <g id="Group-4">
-            <polygon fill="#6D6D6D" points="0 0 96.15 0 158 58.13 158 239 0 239"></polygon>
-            <polygon fill="#FFFFFF" points="20 18 78.13 18 78.70 79.18 138 79.18 138 223 20 223"></polygon>
-            <polygon fill="#FFFFFF" points="94.43 21.24 94.43 61.39 135.76 61.39"></polygon>
+        <g>
+          <polygon fill="#6D6D6D" points="0 0 96.15 0 158 58.13 158 239 0 239"></polygon>
+          <polygon fill="#FFFFFF" points="20 18 78.13 18 78.70 79.18 138 79.18 138 223 20 223"></polygon>
+          <polygon fill="#FFFFFF" points="94.43 21.24 94.43 61.39 135.76 61.39"></polygon>
         </g>
       )
-    }
+    };
+  }
+
+  render_loading(){
+    return {
+      width: 287,
+      height: 277,
+      component: (
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+          <path d="M7.17,182.62 C25.60,237.48 77.43,277 138.5,277 C198.06,277 248.84,239.39 268.40,186.63 C268.40,180.57 264.46,176.05 256.58,173.05 C248.70,170.06 242.80,171.27 238.86,176.68 C223.30,217.22 184.01,246 138,246 C90.97,246 50.97,215.95 36.14,174.00 C32.16,162.74 2.52,168.76 7.17,182.62 Z" fill="#4B93E8"></path>
+        </g>
+      )
+    };
   }
 }
 
