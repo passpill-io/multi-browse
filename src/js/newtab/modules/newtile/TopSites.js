@@ -52,7 +52,7 @@ class TopSites extends Component {
     )
   }
   calculateElements(){
-    var elements = Math.floor( document.body.clientHeight / 150 );
+    var elements = Math.floor( (document.body.clientHeight - 100) / 120 );
     if( elements !== this.state.elements ){
       this.setState({elements});
     }

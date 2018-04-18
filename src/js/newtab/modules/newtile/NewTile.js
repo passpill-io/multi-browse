@@ -11,6 +11,7 @@ class NewTile extends Component {
   constructor(){
     super();
 
+    this.loadBG();
     this.state = {
       bgLoaded: false
     }
@@ -107,7 +108,6 @@ class NewTile extends Component {
   }
 
   componentDidMount(){
-    this.loadBG();
     setTimeout( () => {
       this.s.focus()
     }, 100 );
