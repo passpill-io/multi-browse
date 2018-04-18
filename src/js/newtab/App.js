@@ -30,6 +30,13 @@ class App extends Component {
     });
 
     store.emit('tiles:start', this.tiles.getQueryBuilder.bind(this.tiles) );
+
+    // Open a new title on alt+t
+    document.addEventListener('keydown', e => {
+      if( e.altKey && e.which === 84 ){
+        store.emit('browser:navigate', undefined, '/' );
+      }
+    });
   }
 
 }

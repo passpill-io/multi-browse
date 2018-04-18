@@ -9,16 +9,16 @@ class TopSites extends Component {
 
   render() {
     if( !this.state.topSites ){
-      return <div className="topSites none"></div>;
+      return <div ref={ c => this.el = c } className="topSites none"></div>;
     }
 
     var sites = [];
 
-    for( let i = 0; i<this.state.elements; i++ ){
+    for( let i = 0; i < this.state.elements; i++ ){
       sites.push( this.renderSite(this.state.topSites[i]) );
     }
     return (
-      <div className="topSites">
+      <div ref={ c => this.el = c } className="topSites">
         { sites }
       </div>
     );
@@ -30,9 +30,10 @@ class TopSites extends Component {
     });
 
     this.calculateElements();
-    window.addEventListener( 'resize', e => {
-      this.calculateElements();
-    });
+  }
+
+  componentDidUpdate(){
+    this.calculateElements();
   }
 
   renderSite( s ) {
@@ -52,7 +53,7 @@ class TopSites extends Component {
     )
   }
   calculateElements(){
-    var elements = Math.floor( (document.body.clientHeight - 100) / 120 );
+    var elements = Math.floor( this.el.clientHeight / 120 );
     if( elements !== this.state.elements ){
       this.setState({elements});
     }

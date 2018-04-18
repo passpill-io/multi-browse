@@ -156,7 +156,7 @@ chrome.tabs.onUpdated.addListener( (id,tab) => {
   if( !splitTabs.has(id) && tab.url === 'chrome://newtab/' ){
     splitTabs.add(id);
   }
-  else if( splitTabs.has(id) && tab.url && tab.url !== 'chrome://newtab/' ){
+  else if( splitTabs.has(id) && tab.url && tab.url !== 'chrome://newtab/' && tab.url.indexOf(`chrome-extension://${chrome.runtime.id}`) !== 0 ){
     splitTabs.remove(id);
   }
 });

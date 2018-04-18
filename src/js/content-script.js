@@ -12,11 +12,11 @@
   });
 
   document.addEventListener('keydown', e => {
-    if( e.altKey &&  e.which === 84 ){
+    if( e.altKey && e.which === 84 ){
       chrome.runtime.sendMessage({
         type: 'tileOpen',
         hostUrl: location.href
       });
     }
-  })
+  });
 })();

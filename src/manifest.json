@@ -18,6 +18,7 @@
   },
   "content_scripts": [{
     "matches": ["http://*/*","https://*/*"],
+    "all_frames": true,
     "js": ["contentScript.bundle.js"]
   }],
   "permissions": [

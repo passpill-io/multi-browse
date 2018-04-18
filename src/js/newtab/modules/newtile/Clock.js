@@ -45,12 +45,17 @@ class Clock extends Component {
   }
 
   componentDidMount(){
-    setInterval( () => {
+    this.timer = () => {
       var m = (new Date()).getMinutes();
       if( m !== this.state.minutes ){
         this.setState({minutes: m});
       }
-    }, 1000 );
+    }
+    setInterval( this.timer, 1000 );
+  }
+
+  componentWillUnmount(){
+    clearInterval( this.timer );
   }
 
 }

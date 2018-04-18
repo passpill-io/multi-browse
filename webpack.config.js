@@ -97,6 +97,11 @@ var options = {
       toType: "dir",
       ignore: ["s3.json"]
     }]),
+    new CopyWebpackPlugin([{
+      from: "src/img",
+      to: "img",
+      toType: "dir"
+    }]),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src", "popup.html"),
       filename: "popup.html",
