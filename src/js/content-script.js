@@ -1,6 +1,7 @@
 (function(){
   var browserId;
   chrome.runtime.sendMessage({type: 'registerScript'}, res => {
+    console.log('Registering script', res.browserId);
     browserId = res.browserId;
   });
 
@@ -26,7 +27,15 @@
   });
 
   chrome.runtime.onMessage.addListener( e => {
-    if( e.type !== 'browserReload' || e.browserId !== browserId ) return;
-    location.reload();
+    if( !e.browserId || e.browserId !== browserId ) return;
+
+    if( e.type === 'browserReload' ){
+      console.log('BROWSER RELOAD')
+      location.reload();
+    }
+    else if( e.type === 'browserStop' ){
+      console.log('BROWSER STOP')
+      window.stop();
+    }
   });
 })();

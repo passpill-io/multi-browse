@@ -9,8 +9,6 @@ class Browser extends Component {
     super(props);
     var tile = props.layout;
     store.emit('browser:register', tile.id, tile.query.url);
-    store.on('browser:reload', id => this.reloadIframe() );
-    store.on('browser:stop', id => this.abortIframeLoad() )
   }
 
   render() {
@@ -24,15 +22,6 @@ class Browser extends Component {
     );
   }
 
-  reloadIframe( browserId ){
-    if( browserId !== this.props.layout.id ) return;
-    console.log('Reload', browserId);
-  }
-  abortIframeLoad( browserId ){
-    if( browserId !== this.props.layout.id ) return;
-    console.log('Abort', browserId);
-  }
-
   componentDidMount(){
     console.log('Mount');
     window.ifr = this.iframe;
@@ -40,11 +29,8 @@ class Browser extends Component {
       var b = store.browsers[ this.props.layout.id ];
       b.status = 'OK';
     };
-
-    store.on('browser:reload', browserId => {
-      console.log('RELOAD');
-    });
   }
+  
   componentDidUpdate( prevProps ){
     if( prevProps.layout.query.url !== this.props.layout.query.url ){
       this.iframe.focus();

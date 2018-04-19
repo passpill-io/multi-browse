@@ -29,14 +29,5 @@
     "webNavigation",
     "history",
     "topSites"
-  ],
-  "commands": {
-    "split-window": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+Y",
-        "mac": "Command+Shift+Y"
-      },
-      "description": "Split current window"
-    }
-  }
+  ]
 }

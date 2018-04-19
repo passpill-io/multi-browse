@@ -20,7 +20,13 @@ store.on('browser:register', (id, url, clbk ) => {
   };
 
   return new Promise( resolve => {
-    chrome.runtime.sendMessage({type: 'iframeRegister', url: url}, frameDetails => {
+    var msg = {
+      type: 'iframeRegister',
+      url: url,
+      browserId: id
+    };
+
+    chrome.runtime.sendMessage(msg, frameDetails => {
       currentTab = frameDetails.tabId;
       historyRegister[ frameDetails.frameId ] = id;
       delete pendingRegisters[ url ];
@@ -59,15 +65,11 @@ document.body.addEventListener('keydown', e => {
 });
 
 
-function getBrowser( browserId, url ){
+function getBrowser( browserId ){
   var browser = store.browsers[ browserId ];
 
   if(!browser)
     return console.warn( 'No browser for frame ' + browserId );
-
-  if( browser.history[ browser.historyIndex ] === url ){
-    return; // console.warn( 'Skip pushing the same address to the history ' + url );
-  }
 
   return browser;
 }
@@ -83,6 +85,10 @@ store.on('browser:push', (browserId, url) => {
   var browser = getBrowser( browserId, url );
   if( !browser ) return;
 
+  if( browser.history[ browser.historyIndex ] === url ){
+    return; // console.warn( 'Skip pushing the same address to the history ' + url );
+  }
+
   console.log('History push', url);
   browser.status = 'LOADING';
   browser.historyIndex++;
@@ -92,7 +98,22 @@ store.on('browser:push', (browserId, url) => {
   browser.history = h;
 });
 
+store.on('browser:stop', browserId => {
+  var browser = getBrowser( browserId );
+  if( !browser ) return;
+
+  browser.status = 'OK';
+  chrome.runtime.sendMessage({
+    type: 'browserStopRequest',
+    browserId: browserId
+  });
+});
+
 store.on('browser:reload', browserId => {
+  var browser = getBrowser( browserId );
+  if( !browser ) return;
+
+  browser.status = 'LOADING';
   chrome.runtime.sendMessage({
     type: 'browserReloadRequest',
     browserId: browserId
