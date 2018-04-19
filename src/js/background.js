@@ -75,11 +75,16 @@ chrome.webNavigation.onBeforeNavigate.addListener( details => {
 });
 
 chrome.webNavigation.onCommitted.addListener(function(details){
-  if( !multiTabs.frames[details.frameId] ) return;
+  var frame = multiTabs.frames[details.frameId]
+  if( !frame ) return;
 
-  chrome.tabs.sendMessage(
-    details.tabId, {type: 'navigation', details: details}
-  );
+  var payload = {
+    type: 'navigation',
+    details: details,
+    browserId: frame.browserId
+  }
+
+  chrome.tabs.sendMessage(details.tabId, payload);
 });
 
 chrome.tabs.onCreated.addListener( tab => {

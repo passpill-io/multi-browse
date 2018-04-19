@@ -4,14 +4,9 @@ import resolver from 'utils/TileResolver';
 var getBuilder;
 store.on('tiles:start', gb => getBuilder = gb );
 
-var pendingRegisters = {},
-  historyRegister = {},
-  currentTab
-;
+var currentTab;
 
 store.on('browser:register', (id, url, clbk ) => {
-  pendingRegisters[ url ] = clbk;
-
   store.browsers[id] = {
     history: [url],
     historyIndex: -1,
@@ -28,28 +23,21 @@ store.on('browser:register', (id, url, clbk ) => {
 
     chrome.runtime.sendMessage(msg, frameDetails => {
       currentTab = frameDetails.tabId;
-      historyRegister[ frameDetails.frameId ] = id;
-      delete pendingRegisters[ url ];
       resolve( frameDetails );
     });
   });
 });
 
 // Listen to history events to navigate
-var opening = false;
 chrome.runtime.onMessage.addListener( (msg,sender) => {
   if( !msg || !msg.type ) return;
 
   var type = msg.type;
   if( type === 'navigation' ){
-    var browserId = historyRegister[ msg.details.frameId ];
-    store.emit('browser:push', browserId, msg.details.url);
-    store.emit('browser:navigate', browserId, msg.details.url);
+    store.emit('browser:push', msg.browserId, msg.details.url);
+    store.emit('browser:navigate', msg.browserId, msg.details.url);
   }
-  else if( sender.tab && sender.tab.id === currentTab && !opening  ){
-    opening = true;
-    setTimeout( () => opening = false, 100 );
-
+  else if( sender.tab && sender.tab.id === currentTab  ){
     if( type === 'tileClick' ){
       store.emit('browser:navigate', undefined, msg.url );
     }
@@ -58,12 +46,6 @@ chrome.runtime.onMessage.addListener( (msg,sender) => {
     }
   }
 });
-
-// Listen to open new tile
-document.body.addEventListener('keydown', e => {
-  console.log( e.which );
-});
-
 
 function getBrowser( browserId ){
   var browser = store.browsers[ browserId ];

@@ -56,6 +56,7 @@ class AddressBar extends Component {
     var b = this.props.browser;
     if( b.historyIndex < 1 ) return;
 
+    b.status = 'LOADING';
     b.historyIndex--;
     b.emit('browser:navigate', this.props.browserId, b.history[b.historyIndex]);
   }
