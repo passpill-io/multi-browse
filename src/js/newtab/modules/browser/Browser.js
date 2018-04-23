@@ -18,7 +18,7 @@ class Browser extends Component {
         ref={ iframe => this.iframe = iframe}
         allowFullScreen={true}
         allow="geolocation *; microphone *; camera *; midi *; encrypted-media *"
-        sandbox="allow-same-origin allow-scripts allow-popups allow-forms" />
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation" />
     );
   }
 
@@ -30,7 +30,7 @@ class Browser extends Component {
       b.status = 'OK';
     };
   }
-  
+
   componentDidUpdate( prevProps ){
     if( prevProps.layout.query.url !== this.props.layout.query.url ){
       this.iframe.focus();

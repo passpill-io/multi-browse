@@ -148,7 +148,7 @@ export default {
     while( suggestions.length < 5 && i < entries.length ){
       item = this.history.items[ entries[i] ];
       url = item && item.url.split('//')[1].toLowerCase();
-      if( url.startsWith(prefix) || url.startsWith('www.' + prefix) ){
+      if( url.startsWith(text) || url.startsWith('www.' + text) ){
         suggestions.push( item );
       }
       i++;

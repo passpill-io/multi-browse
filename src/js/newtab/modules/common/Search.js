@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import store from 'state/store';
 import Icon from 'modules/common/Icon';
-import SuggestionCache from 'utils/SuggestionCache';
+import SuggestionFetcher from 'utils/SuggestionFetcher';
 
 class Search extends Component {
   constructor( props ){
@@ -164,17 +164,18 @@ class Search extends Component {
   }
 
   updateWithSuggestions( text ){
+    // When user clears suggested selection
     if( text === this.state.value ){
       return this.setState({
         suggestedValue: false,
         q: text,
         suggestionSelected: 0,
-        suggestions: SuggestionCache.get( text, true ).suggestions
+        suggestions: SuggestionFetcher.fetch(this.props.browserId, text, true).suggestions
       });
     };
 
     var isBack = this.state.value.indexOf( text ) === 0,
-      cache = SuggestionCache.get( text, isBack ),
+      cache = SuggestionFetcher.fetch(this.props.browserId, text, isBack),
       update = {
         value: text,
         suggestedValue: false,
@@ -186,6 +187,7 @@ class Search extends Component {
       update.suggestions = cache.suggestions;
       update.suggestionSelected = 0;
       if( !isBack && cache.suggestions.length && cache.suggestions[0].type === 'page' ){
+        update.suggestedValue = cache.suggestions[0].value;
         update.selection = [text.length, cache.suggestions[0].value.length];
       }
       else {
@@ -194,46 +196,40 @@ class Search extends Component {
     }
 
     this.setState(update);
-
-    if( isBack || cache && cache.complete ){
-      return;
-    }
-
-    store.emit('search:getSuggestions', this.props.browserId, text )
-      .then( data => {
-        SuggestionCache.add( data );
-        if( data.q !== this.state.value ) return;
-
-        var cache = SuggestionCache.get( this.state.value ),
-          suggestedValue = cache && cache.suggestions.length && cache.suggestions[0].value,
-          selection = suggestedValue && cache.suggestions[0].type === 'page' && [data.q.length, suggestedValue.length]
-        ;
-
-        this.setState({
-          suggestions: cache.suggestions || [],
-          suggestionSelected: 0,
-          suggestedValue, selection
-        });
-      })
-    ;
   }
 
   componentDidMount(){
-    this.onMessage = msg => {
-      if( !msg || msg.browserId !== this.props.browserId ) return;
-      if( msg.type !== 'webSuggestions' && msg.type !== 'historySuggestions' ) return;
-      SuggestionCache.add( msg );
-      if( msg.q === this.state.value ){
-        this.setState({
-          suggestions: SuggestionCache.get(msg.q).suggestions
-        });
+    this.onSuggestions = data => {
+      if( data.q !== this.state.value ) return;
+
+      var update = {suggestions: data.suggestions},
+        s
+      ;
+
+      if( data.suggestions.length ){
+        s = data.suggestions[0];
+
+        if( s.value === data.q ){
+          update.suggestionSelected = 0;
+        }
+        else if( s.type === 'page' && s.value.indexOf(data.q) === 0 ){
+          update.suggestionSelected = 0;
+          update.suggestedValue = s.value;
+          update.selection = [data.q.length, s.value.length];
+        }
+        else {
+          data.suggestionSelected = false;
+        }
       }
+
+      this.setState(update);
     };
-    chrome.runtime.onMessage.addListener( this.onMessage );
+
+    SuggestionFetcher.onSuggestions( this.props.browserId, this.onSuggestions );
   }
 
   componentWillUnmount(){
-    chrome.runtime.onMessage.removeListener( this.onMesage );
+    SuggestionFetcher.removeListener(this.props.browserId);
   }
 
   componentDidUpdate( prevProps, prevState ){

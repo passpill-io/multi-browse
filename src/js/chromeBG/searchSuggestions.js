@@ -58,9 +58,11 @@ function getWebSuggestions( text, browserId, tabId ){
 }
 
 function parseGoogleSuggestions( text, data ){
-  var suggestions = [];
+  var suggestions = [],
+    max = Math.min( 5, data[1].length )
+  ;
 
-  for( let i = 0; i < 6; i++ ){
+  for( let i = 0; i < max; i++ ){
     suggestions.push({
       type: data[4]['google:suggesttype'][i] === 'NAVIGATION' ? 'page' : 'search',
       text: data[1][i].split(text),

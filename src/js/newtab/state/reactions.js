@@ -120,11 +120,3 @@ store.on('search:getSuggestions', (browserId, text) => {
     })
   })
 });
-
-window.getSearch = function( text ){
-  store.emit('search:getSuggestions', text )
-    .then( suggestions => {
-      console.log( 'Suggestions', suggestions );
-    })
-  ;
-}

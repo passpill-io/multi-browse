@@ -1,4 +1,4 @@
-export default {
+var cache = {
   cache: {},
   get( q, isBack ){
     var result = this.cache[ q ];
@@ -25,12 +25,14 @@ export default {
     }
 
     return {
+      q: q,
       complete: result.historySuggestions && result.webSuggestions && result.typedSuggestions,
       suggestions: items
     };
   },
   add( data ){
-    var hit = this.cache[ data.q ]
+    var hit = this.cache[ data.q ];
+
     if( !hit ){
       this.cache[ data.q ] = hit = {
         historySuggestions: false,
@@ -45,7 +47,7 @@ export default {
     }
 
     hit[ data.type ] = true;
-    hit.suggestions = this.mergeSuggestions( hit.suggestions, data );
+    hit.suggestions = this.mergeSorted( hit.suggestions, data.suggestions, 5);
   },
 
   removeSuggestions( stored, type ){
@@ -57,18 +59,36 @@ export default {
     }
   },
 
-  mergeSuggestions( stored, data ){
-    data.suggestions.forEach( s => {
-      s.source = data.type;
-      stored.push(s);
-    });
+  mergeSorted( a, b, length ){
+    var merged = [],
+      values = {},
+      i = length,
+      target
+    ;
 
-    stored.sort( this.sortByPoints );
+    while( length-- > 0 && (a.length || b.length) ){
+      // clean used values
+      while( a[0] && values[a[0].value] ){
+        a.shift();
+      }
+      while( b[0] && values[b[0].value] ){
+        b.shift();
+      }
 
-    return stored.slice(0,5);
+      if( a[0] || b[0] ){
+        var target = !a[0] ? b : (!b[0] ? a : (b[0].points > a[0].points ? b : a) );
+        values[ target[0].value ] = 1;
+        merged.push( target.shift() );
+      }
+    }
+
+    return merged;
   },
 
   sortByPoints( a, b ){
     return a.points > b.points ? -1 : 1;
   }
 }
+
+
+export default cache;

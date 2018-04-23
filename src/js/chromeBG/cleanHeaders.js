@@ -1,9 +1,10 @@
+import multiTabs from './multiTabs';
 
 // Clean iframe headers
 chrome.webRequest.onHeadersReceived.addListener( res => {
-
-  // Only for the extension
-  // if( res.initiator !== `chrome-extension://${chrome.runtime.id}`) return;
+  // Only for registered frames
+  var frame = multiTabs.frames[res.frameId];
+  if( !frame ) return;
 
   var headers = [];
   res.responseHeaders.forEach( h => {
