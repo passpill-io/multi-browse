@@ -34,27 +34,33 @@ chrome.runtime.onMessage.addListener( (req, sender, sendResponse ) => {
 });
 
 
+/* FRAME REGISTERING */
+
+// When the multibrowser page is created, it tries to register the iframe sending the
+// url that wants to load
 window.pendingRegisters = {};
 function onIframeRegister( req, clbk ){
 
   // normalize url
   var parser = document.createElement('a');
   parser.href = req.url;
-  // console.log('Adding pending register', url, parser.href);
+
   pendingRegisters[ parser.href.toString() ] = {
     clbk: clbk,
     browserId: req.browserId
   };
 }
 
+// If we detect an iframe loading the url in the multibrowser register
+// we can save the frameId as a multibrowser one
 chrome.webNavigation.onBeforeNavigate.addListener( details => {
-  // console.log(details);
+  // If going back to the new tab page, readd
   if( details.parentFrameId === -1 && details.url === 'chrome://newtab/' ){
     return multiTabs.add( details.tabId );
   }
 
   if( !multiTabs.has(details.tabId) || details.url === "about:srcdoc" ){
-    return console.log('before navigate filtered', details.tabId, details.url );
+    return; // Don't register navigation for non-multibrowse tabs
   }
 
   if( pendingRegisters[details.url] && details.parentFrameId === 0 ){
@@ -67,38 +73,23 @@ chrome.webNavigation.onBeforeNavigate.addListener( details => {
     registerData.clbk( query );
     multiTabs.registerFrame( details.tabId, details.frameId, registerData.browserId );
   }
-  else {
-    //console.log('No pending register', details.url);
-  }
-
-  // console.log('Nav started', details);
 });
 
-chrome.webNavigation.onCommitted.addListener(function(details){
-  var frame = multiTabs.frames[details.frameId]
-  if( !frame ) return;
-
-  var payload = {
-    type: 'navigation',
-    details: details,
-    browserId: frame.browserId
+// When the content-script have been loaded we can start the communication with it
+function onRegisterScript( sender, sendResponse ){
+  var frames = multiTabs.frames;
+  if( frames[ sender.frameId ] ){
+    sendResponse({browserId: frames[sender.frameId].browserId});
   }
+}
 
-  chrome.tabs.sendMessage(details.tabId, payload);
-});
-
+// Add and remove tabs from the multibrowse registered tabs
 chrome.tabs.onCreated.addListener( tab => {
   if( tab.url === 'chrome://newtab/' ){
     multiTabs.add(tab.id);
   }
-  else {
-    // console.log('On created', tab.url);
-  }
 });
-
 chrome.tabs.onUpdated.addListener( (id,tab) => {
-  // console.log('Tab updated', tab);
-
   if( !multiTabs.has(id) && tab.url === 'chrome://newtab/' ){
     multiTabs.add(id);
   }
@@ -114,6 +105,8 @@ chrome.tabs.onRemoved.addListener( (id,tab) => {
 });
 
 
+
+/* Tile click and open tile in non-multibrowse tabs */
 var tilesUrl = `chrome-extension://${chrome.runtime.id}/newtab.html#/?t=r:m{c:mc{mct:URL1},c:c11{side:URL2}}`;
 function getTilerUrl( url1, url2 ){
   var url = tilesUrl
@@ -137,6 +130,21 @@ function onTileOpen( tabId, hostUrl ){
   }
 }
 
+
+/* frame navigation */
+chrome.webNavigation.onCommitted.addListener(function(details){
+  var frame = multiTabs.frames[details.frameId]
+  if( !frame ) return;
+
+  var payload = {
+    type: 'navigation',
+    details: details,
+    browserId: frame.browserId
+  }
+
+  chrome.tabs.sendMessage(details.tabId, payload);
+});
+
 function onBrowserReloadRequest( tabId, browserId ){
   console.log('BROWSER RELOAD REQUEST', browserId);
 
@@ -153,11 +161,4 @@ function onBrowserStopRequest( tabId, browserId ){
     type: 'browserStop',
     browserId: browserId
   });
-}
-
-function onRegisterScript( sender, sendResponse ){
-  var frames = multiTabs.frames;
-  if( frames[ sender.frameId ] ){
-    sendResponse({browserId: frames[sender.frameId].browserId});
-  }
 }
