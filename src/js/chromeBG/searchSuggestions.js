@@ -104,7 +104,7 @@ function getHistorySuggestions( text, browserId, tabId ){
 
         suggestions.push({
           type: 'page',
-          points: (600 + timePoints + (r.typedCount*10) + (r.visitCount / 2)) * 2,
+          points: (600 + timePoints + Math.max(100, r.visitCount / 2) ) * 2,
           title: r.title.split(text),
           text: value.split(text),
           value: value

@@ -19,6 +19,7 @@
 
   document.addEventListener('keydown', e => {
     if( e.altKey && e.which === 84 ){
+      e.preventDefault();
       chrome.runtime.sendMessage({
         type: 'tileOpen',
         hostUrl: location.href
@@ -27,7 +28,7 @@
   });
 
   chrome.runtime.onMessage.addListener( e => {
-    if( !e.browserId || e.browserId !== browserId ) return;
+    if( !e || !e.browserId || e.browserId !== browserId ) return;
 
     if( e.type === 'browserReload' ){
       console.log('BROWSER RELOAD')

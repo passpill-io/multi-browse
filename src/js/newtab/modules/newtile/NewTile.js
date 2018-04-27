@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Search from '../common/Search';
-import Tiles from '../../../react-tiles/src/react-tiles';
+import Tiles from 'js/tiles/react-tiles';
 import Clock from './Clock';
 import Icon from 'modules/common/Icon';
 import store from 'state/store';

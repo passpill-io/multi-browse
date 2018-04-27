@@ -1,0 +1,327 @@
+$time: .3s;
+
+.tilecontainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tilecolumn {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  float:left;
+  transition: width $time;
+
+  &>.tilewrapper, &>.singletile {
+    transition: height $time;
+    width: 100% !important;
+
+    border-top: 3px solid #d6d6d6;
+    &:first-child {
+      border-top: 0;
+    }
+  }
+
+  &.tilewrapper-leave {
+    width: 0 !important;
+  }
+}
+
+.rowsingletile.tilewrapper-leave {
+  width: 0 !important;
+}
+.columnsingletile.tilewrapper-leave {
+  height: 0 !important;
+}
+
+.tilerow {
+  position: relative;
+  overflow: hidden;
+  transition: height $time;
+
+  &>.tilewrapper, &>.singletile {
+    transition: width $time;
+    border-left: 3px solid #d6d6d6;
+    &:first-child {
+      border-left: 0;
+    }
+  }
+
+  &>.singletile {
+    height: 100% !important;
+    float: left;
+  }
+
+
+  &.tilewrapper-leave {
+    height: 0 !important;
+  }
+}
+
+.tilefreeChild {
+  transition: width $time, height $time;
+  float: left;
+
+  &>.singletile {
+    transition: width $time, height $time;
+    float: left;
+  }
+}
+
+.singletile {
+  overflow: hidden;
+  position: relative;
+}
+.tilecontent{
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.tileresizing {
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer */
+  -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+
+  .tilerow, .tilecolumn, .singletile, .separator {
+    transition: none;
+  }
+}
+
+.tilemoving {
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer */
+  -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+}
+
+
+
+.tilecolumn.tileentered>.tileentering {
+  height: 0 !important;
+}
+.tilerow.tileentered>.tileentering {
+  width: 0 !important;
+}
+
+.separator {
+  position: absolute;
+}
+
+.separator-row {
+  height: 100%;
+  width: 3px;
+  top: 0;
+  cursor: ew-resize;
+}
+.separator-column {
+  width: 100%;
+  height: 3px;
+  left: 0;
+  cursor: ns-resize;
+}
+
+.tileiframe {
+  .tilecontent {
+    overflow: hidden;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.tileiframeOverlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: -1;
+}
+
+.tileresizing, .tilemoving {
+  .tileiframeOverlay {
+    z-index: 1;
+  }
+}
+
+.tilecontrols {
+  position: absolute;
+  top:0;
+  right: 15px;
+  text-align: right;
+  width: 100%;
+  padding: 5px 0;
+  opacity: .3;
+  transition: .3s opacity;
+  font-size: 1.3em;
+  background: rgba(255,255,255,.7);
+
+  &:hover {
+    opacity: 1;
+  }
+
+  a {
+    cursor: pointer;
+    color: #666;
+    text-decoration: none;
+    display: inline-block;
+    min-width: 30px;
+    text-align: center;
+
+    &:hover {
+      color: #333;
+      text-decoration: none;
+    }
+  }
+}
+
+.tilefree .tilecontrols{
+  display: none;
+}
+
+.floatingWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 1;
+}
+
+.floatingsingletile {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0,0,0,.1);
+  transition: opacity $time, transform $time;
+
+  &.tilewrapper-leave {
+    opacity: 0;
+    transform: scale(.5) translate( 0, -100px );
+  }
+}
+
+.tilecurrent {
+  z-index: 2;
+}
+
+.tileResizers>div {
+	position: absolute;
+	z-index: 5;
+}
+
+.resizer-n {
+	height: 5px;
+	width: 100%;
+	left: 0;
+	top: -2px;
+	cursor: ns-resize;
+}
+.resizer-ne {
+	width: 5px;
+	height: 5px;
+	z-index: 6;
+	top: -2px;
+	right: -2px;
+	cursor: nesw-resize;
+}
+.resizer-e {
+	width: 5px;
+	height: 100%;
+	top: -2px;
+	right: -2px;
+	cursor: ew-resize;
+}
+.resizer-se {
+	width: 5px;
+	height: 5px;
+	z-index: 6;
+	bottom: -2px;
+	right: -2px;
+	cursor: nwse-resize;
+}
+.resizer-s {
+	height: 5px;
+	width: 100%;
+	left: -2px;
+	bottom: -2px;
+	cursor: ns-resize;
+}
+.resizer-sw {
+	width: 5px;
+	height: 5px;
+	z-index: 6;
+	bottom: -2px;
+	left: -2px;
+	cursor: nesw-resize;
+}
+.resizer-w {
+	width: 5px;
+	height: 100%;
+	top: -2px;
+	left: -2px;
+	cursor: ew-resize;
+}
+.resizer-nw {
+	width: 5px;
+	height: 5px;
+	z-index: 6;
+	top: -2px;
+	left: -2px;
+	cursor: nwse-resize;
+}
+
+.tileph {
+  background: #d6d6d6;
+  float: left;
+  position: absolute;
+  transition: width $time, height $time, opacity $time;
+}
+.rowph {
+  height: 100%;
+  width: 20%;
+  top: 0;
+  right: 0;
+  &.tilewrapper-enter {
+    width: 0%;
+    opacity:0;
+    &.tilewrapper-enter-active {
+      width: 20%;
+      opacity: 1;
+    }
+  }
+  &.tilewrapper-leave {
+    width: 0%;
+    opacity:0;
+  }
+}
+.columnph {
+  width: 100%;
+  height: 20%;
+  bottom: 0;
+  left: 0;
+  &.tilewrapper-enter {
+    height: 0%;
+    opacity:0;
+    &.tilewrapper-enter-active {
+      height: 20%;
+      opacity: 1;
+    }
+  }
+  &.tilewrapper-leave {
+    height: 0%;
+    opacity:0;
+  }
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+}

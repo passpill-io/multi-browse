@@ -11,7 +11,8 @@ store.on('browser:register', (id, url, clbk ) => {
     history: [url],
     historyIndex: -1,
     lastPropUrl: url,
-    suggestions: []
+    suggestions: [],
+    status: 'LOADING'
   };
 
   return new Promise( resolve => {
@@ -34,6 +35,13 @@ chrome.runtime.onMessage.addListener( (msg,sender) => {
 
   var type = msg.type;
   if( type === 'navigation' ){
+    var browser = getBrowser( msg.browserId, msg.details.url );
+    if( !browser ) return;
+
+    if( browser.history[ browser.historyIndex ] === msg.details.url ){
+      return; // console.warn( 'Skip pushing the same address to the history ' + url );
+    }
+
     store.emit('browser:push', msg.browserId, msg.details.url);
     store.emit('browser:navigate', msg.browserId, msg.details.url);
   }
@@ -57,6 +65,12 @@ function getBrowser( browserId ){
 }
 
 store.on('browser:navigate', ( browserId, url ) => {
+  var browser = getBrowser( browserId, url );
+  if( browser && browser.history[ browser.historyIndex ] !== url ){
+    browser.status = 'LOADING';
+  }
+
+
   var builder = getBuilder();
   var route = url === '/' ? '/' : '/browser?url=' + encodeURIComponent(url);
   var url = builder.setTile({route: route, tile: browserId});

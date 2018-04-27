@@ -35,6 +35,7 @@
     "onstate": "^0.7.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-tiles": "^0.5.4",
     "urlhub": "^0.1.1"
   }
 }

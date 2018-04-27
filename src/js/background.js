@@ -145,6 +145,23 @@ chrome.webNavigation.onCommitted.addListener(function(details){
   chrome.tabs.sendMessage(details.tabId, payload);
 });
 
+chrome.webNavigation.onHistoryStateUpdated.addListener(function(details){
+  var frame = multiTabs.frames[details.frameId]
+  if( !frame ) return;
+
+  console.log('JISTORI', details.url);
+
+  var payload = {
+    type: 'navigation',
+    details: details,
+    browserId: frame.browserId
+  }
+
+  chrome.tabs.sendMessage(details.tabId, payload);
+});
+
+
+
 function onBrowserReloadRequest( tabId, browserId ){
   console.log('BROWSER RELOAD REQUEST', browserId);
 

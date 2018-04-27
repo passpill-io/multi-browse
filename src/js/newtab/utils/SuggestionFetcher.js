@@ -35,7 +35,7 @@ var fetcher = {
 chrome.runtime.onMessage.addListener( msg => {
   if( !msg || (msg.type !== 'webSuggestions' && msg.type !== 'historySuggestions') ) return;
 
-  console.log('Sugestions received', msg);
+  // console.log('Sugestions received', msg);
   cache.add( msg );
   fetcher.emit( msg.browserId, cache.get(msg.q) );
 });

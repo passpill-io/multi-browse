@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Search from '../common/Search';
 import Icon from 'modules/common/Icon';
-import Tiles from 'tiles/react-tiles';
+import Tiles from 'js/tiles/react-tiles';
 
 class AddressBar extends Component {
   constructor(props){

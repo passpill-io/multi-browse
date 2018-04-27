@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Tiles from 'tiles/react-tiles';
+import Tiles from 'js/tiles/react-tiles';
 import AddressBar from './AddressBar';
 import store from 'state/store';
 

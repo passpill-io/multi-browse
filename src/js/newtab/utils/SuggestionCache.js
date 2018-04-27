@@ -1,27 +1,38 @@
 var cache = {
   cache: {},
   get( q, isBack ){
-    var result = this.cache[ q ];
-    if( !result ) return false;
-    var items = result.suggestions.slice();
+    var result = this.cache[ q ],
+      items = []
+    ;
 
-    if( isBack ){
-      items.unshift({
-        type: 'search',
-        text: ['',''],
-        points: 3000
-      });
+    if( result ){
+      items = result.suggestions.slice();
     }
     else {
-      var i = 0;
-      while( items[i] && items[i].points > 1000 ){
-        i++;
+      result = {};
+    }
+
+    if( q ){
+      if( isBack ){
+        items.unshift({
+          type: 'search',
+          text: ['',''],
+          points: 3000,
+          value: q
+        });
       }
-      items.splice(i, 0, {
-        type: 'search',
-        text: ['',''],
-        points: 1000
-      });
+      else {
+        var i = 0;
+        while( items[i] && items[i].points > 1000 ){
+          i++;
+        }
+        items.splice(i, 0, {
+          type: 'search',
+          text: ['',''],
+          points: 1000,
+          value: q
+        });
+      }
     }
 
     return {

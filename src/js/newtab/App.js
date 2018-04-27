@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Tiles from '../react-tiles/src/react-tiles';
+import Tiles from 'js/tiles/react-tiles';
 import resolver from './utils/TileResolver';
 import router from './router';
 import store from 'state/store';

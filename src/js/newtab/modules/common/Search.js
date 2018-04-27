@@ -74,9 +74,9 @@ class Search extends Component {
     var items = [];
     parts.forEach( (p, i) => {
       if( i ){
-        items.push( <b key={i}>{ query }</b> );
+        items.push( <b key={ 'q' + i }>{ query }</b> );
       }
-      items.push( <span>{p}</span> );
+      items.push( <span key={ 'v' + i }>{p}</span> );
     });
 
     return (
@@ -170,7 +170,8 @@ class Search extends Component {
         suggestedValue: false,
         q: text,
         suggestionSelected: 0,
-        suggestions: SuggestionFetcher.fetch(this.props.browserId, text, true).suggestions
+        suggestions: SuggestionFetcher.fetch(this.props.browserId, text, true).suggestions,
+        isBack: true
       });
     };
 
@@ -179,6 +180,7 @@ class Search extends Component {
       update = {
         value: text,
         suggestedValue: false,
+        isBack: isBack,
         q: text
       }
     ;
@@ -202,12 +204,14 @@ class Search extends Component {
     this.onSuggestions = data => {
       if( data.q !== this.state.value ) return;
 
-      var update = {suggestions: data.suggestions},
+      var suggestions = this.checkOrder(data.suggestions)
+
+      var update = {suggestions},
         s
       ;
 
-      if( data.suggestions.length ){
-        s = data.suggestions[0];
+      if( suggestions.length ){
+        s = suggestions[0];
 
         if( s.value === data.q ){
           update.suggestionSelected = 0;
@@ -238,6 +242,28 @@ class Search extends Component {
       this.input.focus();
       this.input.setSelectionRange( this.state.selection[0], this.state.selection[1], "backward" );
     }
+  }
+
+  checkOrder( suggestions ){
+    if( !this.state.isBack || !suggestions.length ) return suggestions;
+
+    if( suggestions[0].type === 'search' && suggestions[0].value === this.state.value ) return suggestions;
+
+    var reorder = suggestions.slice(),
+      i = reorder.length
+    ;
+
+    console.log('REORDER!');
+
+    while( i-- > 0 ){
+      if( reorder[i].type === 'search' && reorder[i].value === this.state.value ){
+        var targets = reorder.splice(i,1);
+        reorder.unshift( targets[0] );
+        return reorder;
+      }
+    }
+
+    return suggestions;
   }
 }
 
