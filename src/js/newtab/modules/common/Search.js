@@ -91,8 +91,8 @@ class Search extends Component {
   }
 
   onFocus(){
-    this.input.select();
     setTimeout( () => {
+      this.input.select();
       this.setState({
         focused: true
       });

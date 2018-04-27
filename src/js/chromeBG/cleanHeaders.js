@@ -16,7 +16,7 @@ chrome.webRequest.onHeadersReceived.addListener( res => {
       return; // console.log('Frame block bypassed');
 
     if( name == 'content-security-policy' ){
-      value = h.value.replace(/frame-ancestors[^;]*;/i, '');
+      value = h.value.replace(/frame-ancestors[^;]*/i, '');
       // console.log('Frame block bypassed')
     }
 
