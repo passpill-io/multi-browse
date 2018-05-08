@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Tiles from 'js/tiles/react-tiles';
+import Tiles from 'js/tiles/v2/react-tiles';
 import resolver from './utils/TileResolver';
 import router from './router';
 import store from 'state/store';
@@ -29,7 +29,7 @@ class App extends Component {
       this.forceUpdate();
     });
 
-    store.emit('tiles:start', this.tiles.getQueryBuilder.bind(this.tiles) );
+    // store.emit('tiles:start', this.tiles.getQueryBuilder.bind(this.tiles) );
 
     // Open a new title on alt+t
     document.addEventListener('keydown', e => {

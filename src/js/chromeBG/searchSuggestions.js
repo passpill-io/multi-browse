@@ -26,19 +26,21 @@ chrome.runtime.onMessage.addListener( (req, sender, sendResponse ) => {
   }
 });
 
-var googleDomain, searchURL;
+var urlTemplate = `https://%HOST%/complete/search?client=chrome-omni&gs_ri=chrome-ext-ansg&xssi=t&oit=1&cp=5&pgcl=1&gs_rn=42&q=`,
+  googleDomain = 'google.es'
+;
 
 // Get google localized url
-fetch('https:/google.com')
+fetch('https://google.com')
   .then( res => {
     var parser = document.createElement('a');
     parser.href = res.url;
-    searchURL = `https://${parser.host}/complete/search?client=chrome-omni&gs_ri=chrome-ext-ansg&xssi=t&oit=1&cp=5&pgcl=1&gs_rn=42&q=`
+    googleDomain = parser.host;
   })
 ;
 
 function getWebSuggestions( text, browserId, tabId ){
-  return fetch( searchURL + encodeURIComponent(text) )
+  return fetch( urlTemplate.replace('%HOST%', googleDomain) + encodeURIComponent(text) )
     .then( res => res.text() )
     .then( body => {
       if( body.indexOf(")]}'") === 0 ){
@@ -112,6 +114,8 @@ function getHistorySuggestions( text, browserId, tabId ){
       });
       // return resolve( results );
       suggestions.sort( sortSuggestions );
+
+      console.log( 'History', suggestions.length );
 
       chrome.tabs.sendMessage( tabId, {
         type: 'historySuggestions',

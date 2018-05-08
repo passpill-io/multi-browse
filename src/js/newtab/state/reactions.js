@@ -1,8 +1,5 @@
 import store from './store';
-import resolver from 'utils/TileResolver';
-
-var getBuilder;
-store.on('tiles:start', gb => getBuilder = gb );
+import Tiles from 'js/tiles/v2/react-tiles';
 
 var currentTab;
 
@@ -70,11 +67,8 @@ store.on('browser:navigate', ( browserId, url ) => {
     browser.status = 'LOADING';
   }
 
-
-  var builder = getBuilder();
   var route = url === '/' ? '/' : '/browser?url=' + encodeURIComponent(url);
-  var url = builder.setTile({route: route, tile: browserId});
-  resolver.navigate(url);
+  Tiles.setTile( browserId, route );
 });
 
 store.on('browser:push', (browserId, url) => {
@@ -117,9 +111,7 @@ store.on('browser:reload', browserId => {
 });
 
 store.on('browser:close', browserId => {
-  var builder = getBuilder();
-  var url = builder.remove( browserId );
-  resolver.navigate( url );
+  Tiles.setTile( browserId, false );
 });
 
 store.on('search:getSuggestions', (browserId, text) => {

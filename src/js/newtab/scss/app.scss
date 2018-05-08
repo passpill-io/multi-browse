@@ -10,6 +10,11 @@ html {
   box-sizing: inherit;
 }
 
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
 a {
   cursor: pointer;
 }
