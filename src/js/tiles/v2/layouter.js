@@ -148,10 +148,13 @@ var layouter = {
       }
     }
 
-    var tileId = !tid || layout.tiles[tid] ? this.createTid(layout) : tid;
-    layout.wrappers[wid].push(tileId);
+    var ids = wid === 'floating' ? layout.floating : layout.wrappers[wid],
+      tileId = !tid || layout.tiles[tid] ? this.createTid(layout) : tid
+    ;
+
+    ids.push(tileId);
     layout.tiles[tileId] = {
-      wrapper: wrapperId,
+      wrapper: wid !== 'floating' && wid,
       location: this.toLocation( route )
     };
   },
@@ -167,7 +170,7 @@ var layouter = {
     }
 
     // Remove tile from the wrapper
-    var wrapper = layout.wrappers[tile.wrapper],
+    var wrapper = tile.wrapper ? layout.wrappers[tile.wrapper] : layout.floating,
       i = wrapper.length
     ;
 
@@ -178,7 +181,7 @@ var layouter = {
     }
 
     // If the wrapper is empty remove it too
-    if( !wrapper.length ){
+    if( tile.wrapper && !wrapper.length ){
       delete layout.wrappers[ tile.wrapper ];
       i = layout.wrapperOrder.length;
       while( i-- ){
@@ -194,6 +197,24 @@ var layouter = {
     }
 
     delete layout.tiles[tid];
+  },
+
+  moveTile( layout, tid, wid ){
+    var tile = layout.tiles[tid];
+    if( !tile ) return console.warn("Can't move unexistent tile.");
+    this.removeTileFromLayout(layout, tid);
+    this.updateLayout(layout, tid, tile.location.route, wid);
+  },
+
+  clone( layout ) {
+    var clone = Object.assign({}, layout);
+    clone.wrapperOrder = clone.wrapperOrder.slice();
+    clone.wrappers = Object.assign({}, clone.wrappers);
+    clone.tiles = Object.assign({}, clone.tiles);
+    Object.keys( clone.tiles ).forEach( tid => {
+      clone.tiles[tid] = Object.assign({}, clone.tiles[tid]);
+    });
+    return clone;
   },
 
   toLocation( url ){

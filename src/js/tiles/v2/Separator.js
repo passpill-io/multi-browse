@@ -8,8 +8,12 @@ class Separator extends Component {
   }
 
   render() {
+    var cn = `rtseparator rts${this.props.type}`;
+    if( this.props.withPlaceholder ){
+      cn += ' rttph';
+    }
     return (
-      <div className={ "tseparator ts" + this.props.type }
+      <div className={ cn }
         style={ this.props.style }
         onMouseDown={ this.omd } >
       </div>

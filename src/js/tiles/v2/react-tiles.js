@@ -52,11 +52,14 @@ class Tiles extends Component {
   }
 
   render() {
-    var cn = "rtcontainer",
+    var cn = "rtcontainer rt" + this.state.layout,
       dimensions = this.state.layout === 'column' ? layoutDimensions.column : layoutDimensions.row
     ;
     if( this.moving ){
       cn += ` rtupdating rt${this.moving.type}`;
+      if( this.moving.placeholder === 'wrapper' ){
+        cn += ' rtwph';
+      }
     }
     return (
       <div className={cn} ref={ el => this.el = el }>
@@ -96,6 +99,7 @@ class Tiles extends Component {
           onResize={ this.onTileResize }
           onMoveEnd={ this.onTileEnd }
           onClick={ this.calculateZIndex }
+          withPlaceholder={ this.moving && this.moving.placeholder && this.moving.placeholder === ltile.wrapper }
           tid={ tid }
           floating={ !ltile.wrapper }
           url={ layout.tiles[tid].location.route }
@@ -136,6 +140,7 @@ class Tiles extends Component {
   renderSeparator( type, style, wrapper, tile ){
     return (
       <Separator key={ `ts_${wrapper}_${tile}` } style={ style } type={ type }
+        withPlaceholder={ tile && this.moving && this.moving.placeholder && this.moving.placeholder === this.state.current.wrapperOrder[wrapper] }
         wrapper={ wrapper } tile={ tile }
         onMoveStart={ this.onSepStart }
         onMove={ this.onSepMove }
@@ -247,29 +252,20 @@ class Tiles extends Component {
       target: this.state.tiles[tid],
       start: Object.assign( {}, this.state.tiles[tid] ),
       wrapper: this.state.current.tiles[ tid ].wrapper,
-      reRendering: false
+      reRendering: false,
+      placeholder: false
     };
   }
 
-  onTileMove( left, top ){
+  onTileMove( left, top, eventLeft, eventTop ){
     var moving = this.moving;
 
     if( !moving ) return;
 
+    var layout = this.state.current;
     if( moving.wrapper && !moving.reRendering ){
-      var layout = Object.assign( {}, this.state.current ),
-        wrapper = layout.wrappers[ moving.wrapper ],
-        i = wrapper.length
-      ;
-
-      while( i-- > 0 ){
-        if( wrapper[i] === moving.tid ){
-          wrapper.splice(i, 1);
-        }
-      }
-
-      layout.floating.push( moving.tid );
-
+      layout = layouter.clone( layout );
+      layouter.moveTile( layout, moving.tid, 'floating' );
       moving.reRendering = true;
       return this.setLayout( layout ); // We need to re-render
     }
@@ -286,6 +282,40 @@ class Tiles extends Component {
       { left: moving.start.left + left, top: moving.start.top + top}
     );
 
+    // Calculate placeholder
+    var right = this.el.clientWidth - 200,
+      bottom = this.el.clientHeight - 200,
+      layoutType = layout.type,
+      percentage, ph
+    ;
+
+
+    if( eventTop > bottom && layoutType === 'column' || eventLeft > right && layoutType === 'row' ){
+      // Tile placeholder
+      var tSizes = layoutType === 'row' ? {size: eventTop, coord: 'clientHeight'} : {size: eventLeft, coord: 'clientWidth'};
+
+      percentage = tSizes.size / this.el[ tSizes.coord ] * 100;
+      layout.wrapperOrder.forEach( (wid, i) => {
+        if( !i || ph ) return;
+
+        if(this.state.wrappers[wid].from > percentage ){
+          ph = layout.wrapperOrder[i-1];
+        }
+      });
+      if( !ph ){
+        ph = layout.wrapperOrder[ layout.wrapperOrder.length - 1 ];
+      }
+    }
+    else if( eventTop > bottom || eventLeft > right ){
+      // Wrapper placeholder
+      ph = 'wrapper';
+    }
+    else {
+      ph = false;
+    }
+
+    moving.placeholder = ph;
+
     this.forceUpdate();
   }
 
@@ -293,12 +323,21 @@ class Tiles extends Component {
     var moving = this.moving;
 
     if( left === undefined || !moving ){
-      return this.move = false;
+      return this.moving = false;
     }
 
     this.state.tiles[moving.tid] = moving.target = Object.assign( {}, moving.target,
       { left: moving.start.left + left, top: moving.start.top + top }
     );
+
+    var ph = moving.placeholder;
+    if( ph ){
+      var route = this.state.current.tiles[moving.tid].location.route,
+        wid = ph != 'wrapper' && ph
+      ;
+      layouter.removeTileFromLayout(this.state.current, moving.tid);
+      layouter.updateLayout( this.state.current, moving.tid, route, wid);
+    }
 
     this.moving = false;
 

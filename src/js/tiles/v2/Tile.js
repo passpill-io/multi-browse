@@ -29,6 +29,9 @@ class Tile extends React.Component {
     if( this.state.docking ){
       cn += ' docking';
     }
+    if( this.props.withPlaceholder ){
+      cn += ' rttph';
+    }
     return (
       <div className={ cn } style={ this.props.style } ref={ el => this.el = el } onMouseDown={ this.onClick }>
         <div className="rtheader" onMouseDown={ this.onMoveStart }>
@@ -98,7 +101,7 @@ class Tile extends React.Component {
         if( !moveStarted && Math.abs( left ) < 20 && Math.abs( top ) < 20 ) return;
         moveStarted = true;
 
-        this.props.onMove( left, top );
+        this.props.onMove( left, top, ev.clientX, ev.clientY );
       });
     });
 
