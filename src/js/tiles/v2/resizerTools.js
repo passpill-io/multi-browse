@@ -53,7 +53,7 @@ export default {
     return true;
   },
 
-  updateLayoutSizes( prevLayout, nextLayout, sizes, el ){
+  updateLayoutSizes( prevLayout, nextLayout, sizes, el, middlePoint ){
     var prevElements = {};
     var total = 0;
     var nextSizes = {
@@ -67,7 +67,7 @@ export default {
     });
 
     arrays.forEach( arr => {
-      var minSize = 100 / (arr.ids.length - 1),
+      var minSize = 100 / (arr.ids.length - 1 || 1),
         sum = 0, factor
       ;
 
@@ -77,7 +77,7 @@ export default {
         sum += w.size;
       });
 
-      factor = 100 / sum;
+      factor = 100 / (sum || 1);
       sum = 0;
       arr.ids.forEach( id => {
         var size = nextSizes[arr.type][id].size * factor;
@@ -100,7 +100,12 @@ export default {
 
       if( tile ){
         if( tile.wrapper ){
-          if( sizes.wrappers[ tile.wrapper ] ){
+          // Undocking a tile
+          if( middlePoint ){
+            tileSize.left = middlePoint.left - (tileSize.width / 2 );
+            tileSize.top = middlePoint.top - 10;
+          }
+          else if( sizes.wrappers[ tile.wrapper ] ){
             if( nextLayout.type === 'column' ){
               tileSize.left = sizes.wrappers[ tile.wrapper ].from / 100 * maxWidth;
               tileSize.top = sizes.tiles[ tid ].from / 100 * maxHeight;

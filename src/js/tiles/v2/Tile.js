@@ -58,7 +58,7 @@ class Tile extends React.Component {
     var resizers = resizeKeys.map( k => (
       <div key={k}
         className={"trresizer-" + k}
-        onMouseDown={ () => this.props.onResizeStart(k, this.props.tid) } />
+        onMouseDown={ e => this.onResizeStart(e, k) } />
     ));
 
     return (
@@ -68,8 +68,37 @@ class Tile extends React.Component {
     );
   }
 
-  onMoveStart( e ){
+  onResizeStart( e, direction ){
+    var origin = { left: e.clientX, top: e.clientY },
+      directions = {
+        n: direction.indexOf('n') != -1,
+        s: direction.indexOf('s') != -1,
+        e: direction.indexOf('e') != -1,
+        w: direction.indexOf('w') != -1
+      },
+      ticking = false,
+      mm, mu, ev
+    ;
 
+    this.props.onResizeStart( this.props.tid, origin, directions );
+    window.addEventListener( 'mousemove', mm = e => {
+      ev = e;
+      if( ticking ) return;
+      ticking = true;
+      window.requestAnimationFrame( () => {
+        ticking = false;
+        this.props.onResize( ev );
+      });
+    });
+
+    window.addEventListener( 'mouseup', mu = e => {
+      window.removeEventListener( 'mousemove', mm );
+      window.removeEventListener( 'mouseup', mu );
+      this.props.onResizeEnd(e);
+    });
+  }
+
+  onMoveStart( e ){
   	// Only left click and not a control
   	if( e.button || e.target.tagName.toLowerCase() == 'a' )
     	return;
@@ -121,7 +150,7 @@ class Tile extends React.Component {
   }
 
   componentWillUpdate( nextProps ){
-    if( this.props.floating && !nextProps.floating ){
+    if( this.props.floating !== nextProps.floating ){
       // This will keep the z-index while the docking animation is on
       this.setState({ docking: true } );
       setTimeout( () => this.setState({docking: false}), 300 );

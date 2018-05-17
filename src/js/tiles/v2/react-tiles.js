@@ -31,6 +31,10 @@ class Tiles extends Component {
     this.onTileMove = this.onTileMove.bind(this);
     this.onTileEnd = this.onTileEnd.bind(this);
 
+    this.onResizeStart = this.onResizeStart.bind(this);
+    this.onResize = this.onResize.bind(this);
+    this.onResizeEnd = this.onResizeEnd.bind(this);
+
     this.calculateZIndex = this.calculateZIndex.bind(this);
     /*
     // Bind some quick methods
@@ -96,8 +100,10 @@ class Tiles extends Component {
         <Tile key={ tid }
           onMoveStart={ this.onTileStart }
           onMove={ this.onTileMove }
-          onResize={ this.onTileResize }
           onMoveEnd={ this.onTileEnd }
+          onResizeStart={ this.onResizeStart }
+          onResize={ this.onResize }
+          onResizeEnd={ this.onResizeEnd }
           onClick={ this.calculateZIndex }
           withPlaceholder={ this.moving && this.moving.placeholder && this.moving.placeholder === ltile.wrapper }
           tid={ tid }
@@ -243,6 +249,7 @@ class Tiles extends Component {
   onSepEnd( sid, coord ){
     this.onSepMove(sid, coord);
     this.moving = false;
+    this.forceUpdate();
   }
 
   onTileStart( tid ){
@@ -255,6 +262,7 @@ class Tiles extends Component {
       reRendering: false,
       placeholder: false
     };
+    this.forceUpdate();
   }
 
   onTileMove( left, top, eventLeft, eventTop ){
@@ -266,7 +274,7 @@ class Tiles extends Component {
     if( moving.wrapper && !moving.reRendering ){
       layout = layouter.clone( layout );
       layouter.moveTile( layout, moving.tid, 'floating' );
-      moving.reRendering = true;
+      moving.reRendering = {left: eventLeft, top: eventTop};
       return this.setLayout( layout ); // We need to re-render
     }
     else if( moving.reRendering ){
@@ -288,7 +296,6 @@ class Tiles extends Component {
       layoutType = layout.type,
       percentage, ph
     ;
-
 
     if( eventTop > bottom && layoutType === 'column' || eventLeft > right && layoutType === 'row' ){
       // Tile placeholder
@@ -321,6 +328,7 @@ class Tiles extends Component {
 
   onTileEnd( left, top ){
     var moving = this.moving;
+    this.moving = false;
 
     if( left === undefined || !moving ){
       return this.moving = false;
@@ -332,15 +340,54 @@ class Tiles extends Component {
 
     var ph = moving.placeholder;
     if( ph ){
-      var route = this.state.current.tiles[moving.tid].location.route,
-        wid = ph != 'wrapper' && ph
-      ;
-      layouter.removeTileFromLayout(this.state.current, moving.tid);
-      layouter.updateLayout( this.state.current, moving.tid, route, wid);
+      var layout = layouter.clone(this.state.current);
+      layouter.moveTile(layout, moving.tid, ph != 'wrapper' && ph);
+      this.setLayout( layout );
+    }
+    else {
+      this.forceUpdate();
+    }
+  }
+
+  onResizeStart( tid, origin, directions ){
+    var sizes = this.state.tiles[tid];
+    this.moving = {
+      type: 'resize',
+      maxN: origin.top + sizes.height - MIN_HEIGHT,
+      maxW: origin.left + sizes.width - MIN_WIDTH,
+      initial: Object.assign( {}, sizes ),
+      tid, origin, directions, sizes
+    }
+    this.forceUpdate();
+  }
+
+  onResize( e ){
+    let {maxN,maxW,sizes,origin,directions,initial} = this.moving;
+    var dim;
+
+    if( directions.e ){
+      sizes.width = Math.max(initial.width + e.clientX - origin.left, MIN_WIDTH);
+    }
+    if( directions.s ){
+      sizes.height = Math.max(initial.height + e.clientY - origin.top, MIN_HEIGHT);
+    }
+    if( directions.n ){
+      dim = Math.min( maxN, e.clientY );
+      sizes.height = initial.height + origin.top - dim;
+      sizes.top = initial.top - origin.top + dim;
+    }
+    if( directions.w ){
+      dim = Math.min( maxW, e.clientX );
+      sizes.width = initial.width + origin.left - dim;
+      sizes.left = initial.left - origin.left + dim;
     }
 
-    this.moving = false;
+    this.forceUpdate();
+  }
 
+  onResizeEnd( e ){
+    this.onResize(e);
+    this.moving = false;
     this.forceUpdate();
   }
 
@@ -371,7 +418,7 @@ class Tiles extends Component {
         sizes = resizerTools.updateLayoutSizes( this.state.current, layout, {
           tiles: this.state.tiles,
           wrappers: this.state.wrappers
-        }, this.el)
+        }, this.el, this.moving && this.moving.reRendering )
       ;
 
       update.tiles = sizes.tiles;

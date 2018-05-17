@@ -10,12 +10,12 @@
   flex-direction: column;
   background: #f9f9f9;
   box-shadow: 0 0 2px rgba(0,0,0,.3);
-  transition: box-shadow .3s, width .3s, height .3s, transform .3s, top .3s ease-out, left .3s ease-out;
+  transition: box-shadow .3s, width .3s, height .3s, transform .3s, top .3s, left .3s;
 
   &.floating {
     z-index: 3;
     box-shadow: 0 2px 20px rgba(0,0,0,.2);
-    transition: box-shadow .3s, width .3s, height .3s, transform .3s;
+    transform: none !important;
 
     &.moving {
       box-shadow: 0 2px 30px rgba(0,0,0,.3);
@@ -29,8 +29,8 @@
   }
 
   &.docking {
+    transition: box-shadow .3s, width .3s, height .3s, transform .3s, top .3s, left .3s !important;
     z-index: 1001 !important;
-    transition: box-shadow .3s, width .3s, height .3s, left .3s, top .3s, transform .3s;
   }
 }
 
@@ -38,6 +38,11 @@
   position: absolute;
   z-index: 1000;
   background: yellow;
+  transition: width .3s, height .3s, top .3s, left .3s, opacity .3s, transform .3s;
+
+  &.rtmounting {
+    opacity: 0;
+  }
 
   &.rtsv {
     width: 5px;
@@ -65,7 +70,17 @@
   .tIframeOverlay {
     z-index: 10000;
   }
+}
 
+.rtmoving {
+  .rtile.moving {
+    transition: box-shadow .3s, transform .3s, width .3s, height .3s;
+  }
+}
+.rtseparatorMoving {
+  .rtile {
+    transition: box-shadow .3s, transform .3s;
+  }
   .rtseparator {
     transition: transform .3s;
   }
@@ -153,19 +168,11 @@
   .rtile, .rtseparator {
     transform: translateX( -200px );
   }
-
-  .rtile.floating {
-    transform: none;
-  }
 }
 
 .rtrow.rtwph {
   .rtile, .rtseparator {
     transform: translateY( -200px );
-  }
-
-  .rtile.floating {
-    transform: none;
   }
 }
 
